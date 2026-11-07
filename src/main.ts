@@ -98,6 +98,14 @@ const start = async (): Promise<void> => {
 
   setInterval(() => {
     lockWhenIdle()
+
+    // Another device may create the vault on the server while this one waits on the first screen.
+    if (!state.vault) {
+      void probeServer()
+
+      return
+    }
+
     sync()
   }, SYNC_INTERVAL_MS)
 }
