@@ -1,4 +1,4 @@
-import { biometric, clipboard, dialog, storage } from "pulsar"
+import { biometric, clipboard, dialog, shell, storage } from "pulsar"
 import { tr } from "./i18n.ts"
 import { state, ui } from "./state.ts"
 import { persistState } from "./storage.ts"
@@ -279,6 +279,16 @@ export const deleteDraft = async (): Promise<void> => {
   persistState()
   reopenEntries()
   hooks.changed()
+}
+
+/** Opens an entry's website; a bare host such as `github.com` gets https. */
+export const openSite = (URL: string): void => {
+  const address = URL.trim()
+
+  if (!address) return
+
+  touch()
+  void shell.open(/^[a-z][a-z0-9+.-]*:\/\//i.test(address) ? address : `https://${address}`)
 }
 
 let clearTimer: ReturnType<typeof setTimeout> | null = null

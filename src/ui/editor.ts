@@ -1,6 +1,6 @@
 import { Box, Column, Input, Page, Row, Spacer, Text, TextArea, component, getLocale } from "pulsar"
 import { tr } from "../i18n.ts"
-import { closeDraft, copySecret, deleteDraft, generatePassword, saveDraft, updateDraft } from "../session.ts"
+import { closeDraft, copySecret, deleteDraft, generatePassword, openSite, saveDraft, updateDraft } from "../session.ts"
 import { ui } from "../state.ts"
 import { backgroundColor, dangerColor, textColor } from "../theme.ts"
 import { accentButton, iconTile, screenMotion } from "./kit.ts"
@@ -125,6 +125,9 @@ export const EditorPage = component(() => {
           expand: true,
           onInput: (value) => updateDraft({ URL: value }),
         }),
+        draft.URL.trim()
+          ? iconTile({ icon: "open_in_new", tooltip: tr("Открыть сайт"), onClick: () => openSite(draft.URL) })
+          : null,
       ),
       Column(
         { key: "notes", fillWidth: true },

@@ -46,6 +46,7 @@ const EN: Record<string, string> = {
   "Показать пароль": "Show the password",
   "Скрыть пароль": "Hide the password",
   Сгенерировать: "Generate",
+  "Открыть сайт": "Open the website",
   "Логин скопирован": "Username copied",
   "Пароль скопирован, буфер очистится через 30 с": "Password copied; the clipboard clears in 30 s",
   "Изменено: {date}": "Changed: {date}",

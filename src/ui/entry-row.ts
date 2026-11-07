@@ -1,6 +1,6 @@
 import { Card, Column, Row, Text, component } from "pulsar"
 import { tr } from "../i18n.ts"
-import { copySecret, openDraft } from "../session.ts"
+import { copySecret, openDraft, openSite } from "../session.ts"
 import { accentColor, borderColor, hoverSurfaceColor, surfaceColor, textColor } from "../theme.ts"
 import type { Entry } from "../types.ts"
 import { iconTile } from "./kit.ts"
@@ -68,6 +68,13 @@ export const EntryRow = component<{ key: string; entry: Entry; visible: boolean 
           ? Text({ text: details, size: 12, color: textColor(true), fillWidth: true, maxLines: 1, elide: "right" })
           : null,
       ),
+      entry.URL
+        ? iconTile({
+            icon: "open_in_new",
+            tooltip: tr("Открыть сайт"),
+            onClick: () => openSite(entry.URL),
+          })
+        : null,
       entry.username
         ? iconTile({
             icon: "person",

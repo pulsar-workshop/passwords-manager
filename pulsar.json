@@ -24,7 +24,8 @@
     "dialog",
     "theme",
     "system",
-    "biometric"
+    "biometric",
+    "shell"
   ],
   "osPermissions": [
     "biometric"
