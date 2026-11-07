@@ -1,0 +1,205 @@
+import { net } from "pulsar"
+import { mergeSealed, parseRemote } from "./model.ts"
+import { reopenEntries } from "./session.ts"
+import { DEFAULT_PORT, state, ui } from "./state.ts"
+import { persistState, writeSyncSettings } from "./storage.ts"
+import { setStatus } from "./sync-status.ts"
+import type { RemoteState, SyncSettings } from "./types.ts"
+
+const TIMEOUT_MS = 5000
+
+let revision = 0
+let pushing: Promise<void> | null = null
+let pushQueued = false
+let pulling = false
+
+export const markDirty = (): void => {
+  state.sync.dirty = true
+  revision++
+}
+
+const syncBase = (): string => {
+  if (!state.syncSettings.host) return ""
+
+  return `http://${state.syncSettings.host}:${state.syncSettings.port}`
+}
+
+const syncHeaders = (): Record<string, string> => {
+  const headers: Record<string, string> = { "content-type": "application/json" }
+
+  if (state.syncSettings.password) headers.authorization = `Bearer ${state.syncSettings.password}`
+
+  return headers
+}
+
+/** Fetches what the server holds without merging it, for the first screen. */
+export const fetchRemote = async (): Promise<RemoteState | null> => {
+  const base = syncBase()
+
+  if (!base) return null
+
+  try {
+    const response = await net.fetch(`${base}/state`, { headers: syncHeaders(), timeoutMs: TIMEOUT_MS })
+
+    if (response.status < 200 || response.status >= 300) throw new Error(`sync failed: ${response.status}`)
+
+    setStatus("ok")
+
+    return parseRemote(response.text)
+  } catch {
+    setStatus("error")
+
+    return null
+  }
+}
+
+/** On the first screen: adopt a vault the server already holds, so this device joins it. */
+export const probeServer = async (): Promise<boolean> => {
+  if (state.vault) return false
+
+  const remote = await fetchRemote()
+
+  if (!remote?.vault) return false
+
+  state.vault = remote.vault
+
+  ui.lockMode = "join"
+  ui.lockError = ""
+  ui.lockRepeat = ""
+
+  return true
+}
+
+const applyRemote = (remote: RemoteState): void => {
+  if (remote.vault && state.vault && remote.vault.salt !== state.vault.salt) {
+    setStatus("conflict")
+
+    return
+  }
+
+  const merged = mergeSealed(state.sealed, state.deleted, remote)
+
+  state.deleted = merged.deleted
+
+  if (merged.changed.length === 0) return
+
+  state.sealed = merged.sealed
+  reopenEntries()
+  persistState()
+}
+
+const pushOnce = async (base: string): Promise<boolean> => {
+  const started = revision
+
+  state.sync.dirty = true
+
+  try {
+    const response = await net.fetch(`${base}/state`, {
+      method: "POST",
+      headers: syncHeaders(),
+      body: JSON.stringify({ vault: state.vault, entries: state.sealed, deleted: state.deleted }),
+      timeoutMs: TIMEOUT_MS,
+    })
+
+    if (response.status === 409) {
+      setStatus("conflict")
+
+      return false
+    }
+
+    if (response.status < 200 || response.status >= 300) throw new Error(`sync failed: ${response.status}`)
+
+    const remote = parseRemote(response.text)
+
+    if (remote) applyRemote(remote)
+
+    state.sync.dirty = revision !== started
+    persistState()
+
+    if (ui.syncStatus !== "conflict") setStatus("ok")
+
+    return true
+  } catch {
+    setStatus("error")
+
+    return false
+  }
+}
+
+const runPushes = async (): Promise<void> => {
+  let succeeded = true
+
+  do {
+    pushQueued = false
+
+    const base = syncBase()
+
+    if (!base || !state.vault) return
+
+    succeeded = await pushOnce(base)
+  } while (pushQueued && succeeded)
+}
+
+export const push = (): Promise<void> => {
+  if (pushing) {
+    pushQueued = true
+
+    return pushing
+  }
+
+  pushing = runPushes().finally(() => {
+    pushing = null
+  })
+
+  return pushing
+}
+
+export const pull = async (): Promise<void> => {
+  if (!syncBase() || !state.vault || state.sync.dirty || pushing || pulling) return
+
+  pulling = true
+
+  try {
+    const remote = await fetchRemote()
+
+    if (remote) applyRemote(remote)
+  } finally {
+    pulling = false
+  }
+}
+
+export const syncNow = async (): Promise<void> => {
+  if (!state.syncSettings.host) return
+
+  if (state.sync.dirty) {
+    await push()
+
+    return
+  }
+
+  await pull()
+}
+
+export const saveSyncConnection = async (params: SyncSettings): Promise<void> => {
+  const settings: SyncSettings = {
+    host: params.host.trim(),
+    port: params.port.trim() || DEFAULT_PORT,
+    password: params.password,
+  }
+
+  await writeSyncSettings(settings)
+
+  setStatus(settings.host ? "idle" : "off")
+
+  if (!settings.host) return
+
+  if (!state.vault) {
+    await probeServer()
+
+    return
+  }
+
+  // A different server may hold everything this device has, so send it all.
+  markDirty()
+  await push()
+}
