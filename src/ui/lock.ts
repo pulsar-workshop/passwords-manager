@@ -16,6 +16,7 @@ import {
 import { tr } from "../i18n.ts"
 import { submitLock, unlockWithBiometric } from "../session.ts"
 import { ui } from "../state.ts"
+import { acceptPairing } from "../pairing.ts"
 import { connectToServer, parsePairing } from "../sync.ts"
 import { accentColor, backgroundColor, borderColor, dangerColor, surfaceColor, textColor } from "../theme.ts"
 import { accentButton, iconTile, screenMotion } from "./kit.ts"
@@ -100,6 +101,9 @@ const scan = async () => {
   ui.connectPassword = settings.password
 
   await connect()
+
+  // With a link offer the computer can hand over the key, so no master password is needed.
+  if (settings.offer && ui.lockMode === "join") void acceptPairing(settings.offer)
 }
 
 const field = (key: string, value: string, placeholder: string, onInput: (value: string) => void, secret = false) => {

@@ -97,6 +97,10 @@ const EN: Record<string, string> = {
     "On the phone, open the manager, choose “Connect to an existing one” and scan the code. Then enter the master password.",
   "Код содержит адрес и пароль сервера, но не мастер-пароль и не записи.":
     "The code holds the server address and password, not the master password or any entries.",
+  "Подключить устройство?": "Connect the device?",
+  "Код на телефоне: {code}": "Code on the phone: {code}",
+  "Устройство подключено": "Device connected",
+  "Подтвердите на компьютере. Код: {code}": "Confirm on the computer. Code: {code}",
   ЯЗЫК: "LANGUAGE",
   СЕРВЕР: "SERVER",
   Адрес: "Address",

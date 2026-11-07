@@ -127,14 +127,43 @@ const lanAddresses = (): string[] => {
     .filter((address) => /^(10|192\.168|172\.(1[6-9]|2\d|3[01]))\./.test(address))
 }
 
+// One-time device links: the phone's public key and then the sealed vault key, kept two minutes.
+const pairs = new Map<string, { pub?: string; box?: string; created: number }>()
+
+const handlePair = async (request: Request): Promise<Response> => {
+  const now = Date.now()
+
+  for (const [id, pair] of pairs) if (now - pair.created > 120_000) pairs.delete(id)
+
+  if (request.method === "GET") {
+    const id = new URL(request.url).searchParams.get("id") ?? ""
+
+    return Response.json(pairs.get(id) ?? {})
+  }
+
+  const body = (await request.json().catch(() => null)) as { id?: unknown; pub?: unknown; box?: unknown } | null
+
+  if (!body || typeof body.id !== "string") return new Response("expected an id", { status: 400 })
+
+  const pair = pairs.get(body.id) ?? { created: now }
+
+  if (typeof body.pub === "string") pair.pub = body.pub
+  if (typeof body.box === "string") pair.box = body.box
+
+  pairs.set(body.id, pair)
+
+  return Response.json({ ok: true })
+}
+
 const route = (request: Request, path: string): Response | Promise<Response> => {
-  if (path !== "/state" && path !== "/info") return new Response("not found", { status: 404 })
+  if (path !== "/state" && path !== "/info" && path !== "/pair") return new Response("not found", { status: 404 })
 
   if (!authorized(request)) {
     return new Response("unauthorized", { status: 401, headers: { "www-authenticate": "Bearer" } })
   }
 
   if (path === "/info") return Response.json({ addresses: lanAddresses(), port })
+  if (path === "/pair") return handlePair(request)
 
   return handleState(request)
 }

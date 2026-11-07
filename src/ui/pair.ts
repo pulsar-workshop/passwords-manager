@@ -1,6 +1,7 @@
 import { Box, Column, Page, QrCode, Row, Spacer, Text, component, signal } from "pulsar"
 import { tr } from "../i18n.ts"
 import { ui } from "../state.ts"
+import { offerPairing } from "../pairing.ts"
 import { pairingLink } from "../sync.ts"
 import { backgroundColor, textColor } from "../theme.ts"
 import { iconTile, screenMotion } from "./kit.ts"
@@ -13,7 +14,15 @@ const closePair = () => {
 export const PairPage = component(() => {
   const link = signal<string | null | undefined>(undefined)
 
-  void pairingLink().then((value) => link.set(value))
+  void pairingLink().then(async (value) => {
+    if (!value) {
+      link.set(value)
+
+      return
+    }
+
+    link.set(`${value}&p=${await offerPairing(() => ui.pairOpen)}`)
+  })
 
   return () => {
     const value = link.get()

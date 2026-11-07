@@ -53,6 +53,19 @@ export const reopenEntries = (): void => {
     .sort(byTitle)
 }
 
+/** The open vault's key, for handing to a device the user approves. */
+export const currentKey = (): Uint8Array | null => key
+
+/** Opens the vault with a key another device sent; false when it does not fit. */
+export const unlockWithKey = (next: Uint8Array): boolean => {
+  if (!state.vault || !keyOpensVault(next, state.vault)) return false
+
+  persistState()
+  finishUnlock(next)
+
+  return true
+}
+
 const finishUnlock = (next: Uint8Array): void => {
   key = next
   touch()

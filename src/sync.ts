@@ -77,12 +77,12 @@ export const probeServer = async (): Promise<ServerVault> => {
 }
 
 /** Reads a pairing link from another device's QR code: pmsync://host:port?k=password. */
-export const parsePairing = (text: string): SyncSettings | null => {
-  const match = text.trim().match(/^pmsync:\/\/([^:/?#\s]+):(\d{1,5})\/?(?:\?k=([^#\s]*))?$/)
+export const parsePairing = (text: string): (SyncSettings & { offer: string }) | null => {
+  const match = text.trim().match(/^pmsync:\/\/([^:/?#\s]+):(\d{1,5})\/?(?:\?k=([^&#\s]*))?(?:&p=([^#\s]*))?$/)
 
   if (!match) return null
 
-  return { host: match[1]!, port: match[2]!, password: decodeURIComponent(match[3] ?? "") }
+  return { host: match[1]!, port: match[2]!, password: decodeURIComponent(match[3] ?? ""), offer: match[4] ?? "" }
 }
 
 /** The link other devices scan; a computer on localhost names its LAN address instead. */
