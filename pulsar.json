@@ -25,7 +25,8 @@
     "theme",
     "system",
     "biometric",
-    "shell"
+    "shell",
+    "scanner"
   ],
   "osPermissions": [
     "biometric"

@@ -1,5 +1,6 @@
 import { Database } from "bun:sqlite"
 import { existsSync, readFileSync } from "fs"
+import { networkInterfaces } from "os"
 import { dirname, isAbsolute, join } from "path"
 import { mergeSealed, parseDeleted, parseSealed, parseVaultMeta } from "./src/model.ts"
 import type { RemoteState, SealedEntry, VaultMeta } from "./src/types.ts"
@@ -117,12 +118,23 @@ const handleState = async (request: Request): Promise<Response> => {
   return Response.json(readState())
 }
 
+/** The machine's LAN addresses, so a computer on localhost can show phones where to connect. */
+const lanAddresses = (): string[] => {
+  return Object.values(networkInterfaces())
+    .flat()
+    .filter((item) => item !== undefined && item.family === "IPv4" && !item.internal)
+    .map((item) => item!.address)
+    .filter((address) => /^(10|192\.168|172\.(1[6-9]|2\d|3[01]))\./.test(address))
+}
+
 const route = (request: Request, path: string): Response | Promise<Response> => {
-  if (path !== "/state") return new Response("not found", { status: 404 })
+  if (path !== "/state" && path !== "/info") return new Response("not found", { status: 404 })
 
   if (!authorized(request)) {
     return new Response("unauthorized", { status: 401, headers: { "www-authenticate": "Bearer" } })
   }
+
+  if (path === "/info") return Response.json({ addresses: lanAddresses(), port })
 
   return handleState(request)
 }

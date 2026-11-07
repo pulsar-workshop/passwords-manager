@@ -19,13 +19,14 @@ let lastActivity = Date.now()
 type Hooks = {
   readonly changed: () => void
   readonly unlocked: () => void
-  readonly checkServer: () => Promise<boolean>
+  /** What the configured server holds: "vault" means this device should join it. */
+  readonly checkServer: () => Promise<"off" | "unreachable" | "empty" | "vault">
 }
 
 let hooks: Hooks = {
   changed: () => {},
   unlocked: () => {},
-  checkServer: () => Promise.resolve(false),
+  checkServer: () => Promise.resolve("off"),
 }
 
 /** Sync registers itself here, which keeps this module free of a cycle with it. */
@@ -79,7 +80,19 @@ const createNew = async (password: string): Promise<void> => {
   }
 
   // Another device may have made a vault on this server since the screen opened.
-  if (await hooks.checkServer()) return
+  const server = await hooks.checkServer()
+
+  if (server === "vault") return
+
+  // A second device that cannot reach the server would otherwise start a separate vault.
+  if (server === "unreachable") {
+    const create = await dialog.message({
+      title: tr("Сервер недоступен"),
+      text: tr("Если хранилище уже есть на другом устройстве, сначала подключитесь к нему. Создать новое хранилище?"),
+    })
+
+    if (!create) return
+  }
 
   const vault = await createVault(password)
 
@@ -127,7 +140,7 @@ export const lock = (): void => {
   key = null
 
   ui.locked = true
-  ui.lockMode = state.vault ? "unlock" : "create"
+  ui.lockMode = state.vault ? "unlock" : "choose"
   ui.entries = []
   ui.draft = null
   ui.settingsOpen = false

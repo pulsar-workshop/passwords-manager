@@ -17,11 +17,15 @@ export const state = createState({
   deleted: {} as Record<string, number>,
 })
 
-export type LockMode = "create" | "unlock" | "join"
+/**
+ * choose: no vault yet, pick a new one or connect; create and connect follow from it;
+ * join: the server holds a vault, enter its master password; unlock: this device's vault.
+ */
+export type LockMode = "choose" | "create" | "connect" | "join" | "unlock"
 
 export const ui = createState({
   locked: true,
-  lockMode: "create" as LockMode,
+  lockMode: "choose" as LockMode,
   lockPassword: "",
   lockRepeat: "",
   lockError: "",
@@ -33,6 +37,13 @@ export const ui = createState({
   draftError: "",
   showPassword: false,
   settingsOpen: false,
+  scannerAvailable: false,
+  connectHost: "",
+  connectPort: DEFAULT_PORT,
+  connectPassword: "",
+  connectError: "",
+  connecting: false,
+  pairOpen: false,
   biometricAvailable: false,
   biometricEnabled: false,
   themeDark: true,

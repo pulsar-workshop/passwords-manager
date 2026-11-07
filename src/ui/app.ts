@@ -9,6 +9,7 @@ import { EditorPage } from "./editor.ts"
 import { EntryRow } from "./entry-row.ts"
 import { accentButton, iconTile } from "./kit.ts"
 import { LockPage } from "./lock.ts"
+import { PairPage } from "./pair.ts"
 import { SettingsPage } from "./settings.tsx"
 
 const syncProblem = () => {
@@ -135,5 +136,6 @@ export const renderApp = () => {
     ui.locked && !ui.settingsOpen ? LockPage({}) : null,
     ui.draft ? EditorPage({}) : null,
     ui.settingsOpen ? SettingsPage({}) : null,
+    ui.pairOpen ? PairPage({}) : null,
   )
 }

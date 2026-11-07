@@ -70,6 +70,16 @@ export const SettingsPage = component(() => {
             fillWidth
             onChange={(index) => setLanguage(index === 1 ? "en" : "ru")}
           />
+          {state.vault && state.syncSettings.host && !ui.locked ? (
+            <Text size={10} weight="medium" color={textColor(true)} letterSpacing={1.2}>
+              {tr("ДРУГИЕ УСТРОЙСТВА")}
+            </Text>
+          ) : null}
+          {state.vault && state.syncSettings.host && !ui.locked ? (
+            <Button variant="outline" icon="qr_code_2" fillWidth onClick={() => (ui.pairOpen = true)}>
+              {tr("Подключить устройство")}
+            </Button>
+          ) : null}
           {ui.biometricAvailable && !ui.locked ? (
             <Text size={10} weight="medium" color={textColor(true)} letterSpacing={1.2}>
               {tr("ОТПЕЧАТОК ПАЛЬЦА")}

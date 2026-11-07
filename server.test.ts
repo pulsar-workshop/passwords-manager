@@ -77,6 +77,14 @@ describe("sync server", () => {
     expect(response.status).toBe(409)
   })
 
+  test("reports its LAN addresses to an authorized client", async () => {
+    const response = await fetch(`${base}/info`, { headers: { authorization: "Bearer pw" } })
+    const info = (await response.json()) as { addresses: string[] }
+
+    expect(response.status).toBe(200)
+    expect(Array.isArray(info.addresses)).toBe(true)
+  })
+
   test("a deletion removes an older entry", async () => {
     const response = await post({ vault, entries: [], deleted: { a: 5 } })
     const state = (await response.json()) as { entries: unknown[]; deleted: Record<string, number> }

@@ -1,4 +1,4 @@
-import { effect } from "pulsar"
+import { effect, scanner } from "pulsar"
 import { initLanguage, language } from "./i18n.ts"
 import { installMenu } from "./menu.ts"
 import {
@@ -33,6 +33,12 @@ const sync = () => {
 }
 
 const handleBack = () => {
+  if (ui.pairOpen) {
+    ui.pairOpen = false
+
+    return
+  }
+
   if (ui.settingsOpen) {
     ui.settingsOpen = false
 
@@ -108,6 +114,8 @@ const start = async (): Promise<void> => {
   app.run()
 
   await initBiometric()
+
+  ui.scannerAvailable = await scanner.available().catch(() => false)
 
   if (!state.vault) void probeServer()
   else void unlockWithBiometric()

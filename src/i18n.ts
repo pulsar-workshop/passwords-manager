@@ -70,6 +70,33 @@ const EN: Record<string, string> = {
   "Войти по отпечатку": "Unlock with a fingerprint",
   "Открыть пароли": "Unlock passwords",
   "Ввести мастер-пароль": "Use the master password",
+  "Новое хранилище": "New vault",
+  "Подключиться к существующему": "Connect to an existing one",
+  "Новое хранилище — для первого устройства. Если пароли уже есть на другом, подключитесь к нему.":
+    "A new vault is for your first device. If your passwords are already on another one, connect to it.",
+  "Отсканируйте QR-код из настроек на другом устройстве или введите данные сервера.":
+    "Scan the QR code from the settings on your other device, or enter the server details.",
+  "Сканировать QR-код": "Scan the QR code",
+  "Наведите камеру на QR-код": "Point the camera at the QR code",
+  Отмена: "Cancel",
+  "Это не QR-код менеджера паролей": "This is not a Passwords Manager QR code",
+  Подключиться: "Connect",
+  "Подключаюсь…": "Connecting…",
+  "На сервере ещё нет хранилища. Создайте его здесь или на другом устройстве.":
+    "The server has no vault yet. Create one here or on another device.",
+  "Сервер недоступен. Проверьте адрес, порт и пароль.":
+    "The server is unavailable. Check the address, port and password.",
+  "Если хранилище уже есть на другом устройстве, сначала подключитесь к нему. Создать новое хранилище?":
+    "If a vault already exists on another device, connect to it first. Create a new vault anyway?",
+  "ДРУГИЕ УСТРОЙСТВА": "OTHER DEVICES",
+  "Подключить устройство": "Connect a device",
+  "Готовлю код…": "Preparing the code…",
+  "Не удалось узнать адрес этого компьютера в сети. Укажите его в настройках сервера вместо 127.0.0.1.":
+    "Could not find this computer's network address. Enter it in the server settings instead of 127.0.0.1.",
+  "На телефоне откройте менеджер, выберите «Подключиться к существующему» и отсканируйте код. Затем введите мастер-пароль.":
+    "On the phone, open the manager, choose “Connect to an existing one” and scan the code. Then enter the master password.",
+  "Код содержит адрес и пароль сервера, но не мастер-пароль и не записи.":
+    "The code holds the server address and password, not the master password or any entries.",
   ЯЗЫК: "LANGUAGE",
   СЕРВЕР: "SERVER",
   Адрес: "Address",

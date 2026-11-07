@@ -40,7 +40,7 @@ export const restore = async (): Promise<void> => {
   state.sealed = parseSealed(sealed)
   state.sync.dirty = dirty === true
 
-  ui.lockMode = state.vault ? "unlock" : "create"
+  ui.lockMode = state.vault ? "unlock" : "choose"
 }
 
 const secureAvailable = async (): Promise<boolean> => {
