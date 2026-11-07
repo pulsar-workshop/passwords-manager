@@ -1,5 +1,5 @@
 import { Column, Icon, Row, Text, type ColorValue, type UiNode } from "pulsar"
-import { accentColor, borderColor, hoverSurfaceColor, onAccentColor, textColor } from "../theme.ts"
+import { accentColor, borderColor, onAccentColor, textColor } from "../theme.ts"
 
 export const iconTile = (options: {
   key?: string
@@ -20,8 +20,9 @@ export const iconTile = (options: {
       a11yLabel: options.tooltip,
       justify: "center",
       alignItems: "center",
-      hover: { color: hoverSurfaceColor() },
-      pressed: { color: borderColor() },
+      // Rows use hoverSurfaceColor for their own hover, so an icon on a hovered row needs a stronger tone.
+      hover: { color: borderColor() },
+      pressed: { color: borderColor(), scale: 0.9 },
       transition: { duration: 120 },
       onClick: options.onClick,
     },
