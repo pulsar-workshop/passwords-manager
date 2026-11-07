@@ -19,23 +19,24 @@ random 16-byte salt) by the native host, and each entry is sealed with XChaCha20
 (`@noble/ciphers`), bound to its ID. Only ciphertext is stored on disk and sent to the
 server; the server sees entry IDs and change times, never the contents or the key.
 
-## Requirements
-
-- [Bun](https://bun.sh)
-- Pulsar 2.1.0 or newer (`crypto.pbkdf2` and `biometric`)
-
 ## Run
 
+You need [Pulsar](https://github.com/riclud/pulsar) 2.1.0 or newer (`crypto.pbkdf2` and
+`biometric`). It installs the app's packages on the first run.
+
 ```
-bun install
-bun run dev
+pulsar dev                    # run with live reload
+pulsar build                  # a single binary in dist/
+pulsar build --target android # an APK
 ```
 
 ## Sync server
 
+The server is a small [Bun](https://bun.sh) program (it uses `bun:sqlite`):
+
 ```
-bun run server                  # PORT=8010, DB=passwords.db, PASSWORD= by default
-bun run build:server:linux      # a single binary in dist/
+bun server.ts                   # PORT=8010, DB=passwords.db, PASSWORD= by default
+bun run build:server:linux      # a single binary in dist/, no Bun needed to run it
 ```
 
 `deploy/passwords-manager-sync.service` runs the binary from `/opt/passwords-manager-sync`.
