@@ -33,6 +33,8 @@ export const ui = createState({
   draftError: "",
   showPassword: false,
   settingsOpen: false,
+  biometricAvailable: false,
+  biometricEnabled: false,
   themeDark: true,
   syncStatus: "off",
 })

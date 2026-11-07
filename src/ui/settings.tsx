@@ -1,5 +1,6 @@
 import { Box, Button, Input, Page, Row, Segmented, Spacer, Text, component, signal } from "pulsar"
 import { DEFAULT_PORT, state, ui } from "../state.ts"
+import { disableBiometric, enableBiometric } from "../session.ts"
 import { saveSyncConnection } from "../sync.ts"
 import { backgroundColor, textColor } from "../theme.ts"
 import { language, setLanguage, tr } from "../i18n.ts"
@@ -69,6 +70,21 @@ export const SettingsPage = component(() => {
             fillWidth
             onChange={(index) => setLanguage(index === 1 ? "en" : "ru")}
           />
+          {ui.biometricAvailable && !ui.locked ? (
+            <Text size={10} weight="medium" color={textColor(true)} letterSpacing={1.2}>
+              {tr("ОТПЕЧАТОК ПАЛЬЦА")}
+            </Text>
+          ) : null}
+          {ui.biometricAvailable && !ui.locked ? (
+            <Button
+              variant="outline"
+              icon="fingerprint"
+              fillWidth
+              onClick={() => void (ui.biometricEnabled ? disableBiometric() : enableBiometric())}
+            >
+              {ui.biometricEnabled ? tr("Выключить вход по отпечатку") : tr("Включить вход по отпечатку")}
+            </Button>
+          ) : null}
           <Text size={10} weight="medium" color={textColor(true)} letterSpacing={1.2}>
             {tr("СЕРВЕР")}
           </Text>

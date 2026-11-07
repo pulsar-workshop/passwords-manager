@@ -78,6 +78,11 @@ export const unlockVault = async (password: string, meta: VaultMeta): Promise<Ui
   return open(key, meta.check, CHECK_CONTEXT) === CHECK ? key : null
 }
 
+/** Whether a key handed back by the fingerprint store still opens this vault. */
+export const keyOpensVault = (key: Uint8Array, meta: VaultMeta): boolean => {
+  return open(key, meta.check, CHECK_CONTEXT) === CHECK
+}
+
 export const sealEntry = async (key: Uint8Array, entry: Entry): Promise<SealedEntry> => {
   const data = await seal(key, JSON.stringify(entry), entry.ID)
 

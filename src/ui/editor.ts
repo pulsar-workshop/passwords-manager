@@ -55,11 +55,13 @@ export const EditorPage = component(() => {
     Page(
       {
         padding: 14,
-        gap: 14,
+        gap: 20,
         overscroll: false,
         header: header(),
         footer: accentButton({ label: tr("Сохранить"), icon: "check", onClick: () => void saveDraft() }),
       },
+      // Outlined fields float their label above the border, so the first one needs room below the header.
+      Box({ key: "top-gap", height: 6 }),
       field(
         "title",
         Input({

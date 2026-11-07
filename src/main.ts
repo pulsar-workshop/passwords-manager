@@ -1,7 +1,15 @@
 import { effect } from "pulsar"
 import { initLanguage, language } from "./i18n.ts"
 import { installMenu } from "./menu.ts"
-import { closeDraft, lock, lockWhenIdle, openDraft, setSessionHooks } from "./session.ts"
+import {
+  closeDraft,
+  initBiometric,
+  lock,
+  lockWhenIdle,
+  openDraft,
+  setSessionHooks,
+  unlockWithBiometric,
+} from "./session.ts"
 import { app, state, ui } from "./state.ts"
 import { flushState, loadSyncSettings, restore } from "./storage.ts"
 import { setStatus } from "./sync-status.ts"
@@ -67,9 +75,14 @@ app.on("app-pause", () => {
   void flushState()
 })
 app.on("app-resume", () => {
-  if (pausedAT && Date.now() - pausedAT > AWAY_LOCK_MS) lock()
+  const away = pausedAT > 0 && Date.now() - pausedAT > AWAY_LOCK_MS
 
   pausedAT = 0
+
+  if (!away) return
+
+  lock()
+  void unlockWithBiometric()
 })
 app.on("power-resume", () => {
   lock()
@@ -94,7 +107,10 @@ const start = async (): Promise<void> => {
   app.window("main").render(renderApp)
   app.run()
 
+  await initBiometric()
+
   if (!state.vault) void probeServer()
+  else void unlockWithBiometric()
 
   setInterval(() => {
     lockWhenIdle()

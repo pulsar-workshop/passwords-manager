@@ -1,6 +1,6 @@
-import { Box, Column, Icon, Input, Page, Row, Spacer, Text, component, signal } from "pulsar"
+import { Box, Button, Column, Icon, Input, Page, Row, Spacer, Text, component, signal } from "pulsar"
 import { tr } from "../i18n.ts"
-import { submitLock } from "../session.ts"
+import { submitLock, unlockWithBiometric } from "../session.ts"
 import { ui } from "../state.ts"
 import { accentColor, backgroundColor, borderColor, dangerColor, surfaceColor, textColor } from "../theme.ts"
 import { accentButton, iconTile, screenMotion } from "./kit.ts"
@@ -111,6 +111,12 @@ export const LockPage = component(() => {
             icon: creating ? "add_moderator" : "lock_open",
             onClick: () => void submitLock(),
           }),
+          ui.biometricEnabled && ui.lockMode === "unlock"
+            ? Button(
+                { variant: "outline", icon: "fingerprint", fillWidth: true, onClick: () => void unlockWithBiometric() },
+                tr("Войти по отпечатку"),
+              )
+            : null,
         ),
       ),
     ),

@@ -1,10 +1,13 @@
-import { clipboard, dialog } from "pulsar"
+import { biometric, clipboard, dialog, storage } from "pulsar"
 import { tr } from "./i18n.ts"
 import { state, ui } from "./state.ts"
 import { persistState } from "./storage.ts"
 import type { Entry } from "./types.ts"
-import { createVault, openEntry, randomBytes, sealEntry, unlockVault } from "./vault.ts"
+import { fromBase64, toBase64 } from "./encoding.ts"
+import { createVault, keyOpensVault, openEntry, randomBytes, sealEntry, unlockVault } from "./vault.ts"
 
+const BIOMETRIC_KEY = "vaultKey"
+const BIOMETRIC_FLAG = "biometric"
 const IDLE_LOCK_MS = 5 * 60_000
 const CLIPBOARD_CLEAR_MS = 30_000
 const MIN_MASTER_LENGTH = 8
@@ -129,6 +132,67 @@ export const lock = (): void => {
   ui.draft = null
   ui.settingsOpen = false
   ui.showPassword = false
+}
+
+const biometricPrompt = () => {
+  return { title: tr("Открыть пароли"), cancel: tr("Ввести мастер-пароль") }
+}
+
+export const initBiometric = async (): Promise<void> => {
+  ui.biometricAvailable = await biometric.available().catch(() => false)
+  ui.biometricEnabled = ui.biometricAvailable && (await storage.get(BIOMETRIC_FLAG)) === true
+}
+
+let biometricBusy = false
+
+/** Unlocks with the key the fingerprint store keeps; any failure leaves the password screen. */
+export const unlockWithBiometric = async (): Promise<void> => {
+  const vault = state.vault
+
+  if (!vault || !ui.locked || !ui.biometricEnabled || biometricBusy || ui.lockMode !== "unlock") return
+
+  biometricBusy = true
+
+  try {
+    const stored = await biometric.open(BIOMETRIC_KEY, biometricPrompt())
+
+    if (!stored) return
+
+    const next = fromBase64(stored)
+
+    if (keyOpensVault(next, vault)) {
+      finishUnlock(next)
+
+      return
+    }
+
+    // The vault changed since the fingerprint was set up, so its old key is useless.
+    await disableBiometric()
+  } finally {
+    biometricBusy = false
+  }
+}
+
+export const enableBiometric = async (): Promise<void> => {
+  const current = key
+
+  if (!current || !ui.biometricAvailable) return
+
+  touch()
+
+  const sealed = await biometric.seal(BIOMETRIC_KEY, toBase64(current), biometricPrompt())
+
+  if (!sealed) return
+
+  ui.biometricEnabled = true
+  await storage.set(BIOMETRIC_FLAG, true)
+}
+
+export const disableBiometric = async (): Promise<void> => {
+  ui.biometricEnabled = false
+
+  await storage.set(BIOMETRIC_FLAG, false)
+  await biometric.remove(BIOMETRIC_KEY).catch(() => false)
 }
 
 export const lockWhenIdle = (): void => {

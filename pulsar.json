@@ -3,7 +3,10 @@
   "name": "passwords-manager",
   "version": "0.1.0",
   "main": "src/main.ts",
-  "targets": ["desktop", "android"],
+  "targets": [
+    "desktop",
+    "android"
+  ],
   "compat": "portable",
   "windows": [
     {
@@ -13,5 +16,17 @@
       "title": "Passwords Manager"
     }
   ],
-  "permissions": ["storage", "secure", "net", "clipboard", "dialog", "theme", "system"]
+  "permissions": [
+    "storage",
+    "secure",
+    "net",
+    "clipboard",
+    "dialog",
+    "theme",
+    "system",
+    "biometric"
+  ],
+  "osPermissions": [
+    "biometric"
+  ]
 }
