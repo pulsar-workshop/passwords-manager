@@ -101,6 +101,7 @@ const EN: Record<string, string> = {
   "Код на телефоне: {code}": "Code on the phone: {code}",
   "Устройство подключено": "Device connected",
   "Подтвердите на компьютере. Код: {code}": "Confirm on the computer. Code: {code}",
+  "Не удалось открыть камеру или код не считан": "Could not open the camera or read the code",
   ЯЗЫК: "LANGUAGE",
   СЕРВЕР: "SERVER",
   Адрес: "Address",

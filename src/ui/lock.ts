@@ -9,6 +9,7 @@ import {
   Spacer,
   Text,
   component,
+  platform,
   scanner,
   signal,
   type UiNode,
@@ -83,10 +84,19 @@ const connect = async () => {
   }
 }
 
-const scan = async () => {
-  const text = await scanner.scan({ title: tr("Наведите камеру на QR-код"), cancel: tr("Отмена") })
+const onPhone = () => platform().os === "android"
 
-  if (!text) return
+const scan = async () => {
+  ui.lockMode = "connect"
+  ui.connectError = ""
+
+  const text = await scanner.scan({ title: tr("Наведите камеру на QR-код"), cancel: tr("Отмена") }).catch(() => null)
+
+  if (!text) {
+    ui.connectError = tr("Не удалось открыть камеру или код не считан")
+
+    return
+  }
 
   const settings = parsePairing(text)
 
@@ -121,17 +131,18 @@ const field = (key: string, value: string, placeholder: string, onInput: (value:
 
 const chooseControls = (): UiNode[] => {
   return [
+    onPhone() ? accentButton({ label: tr("Сканировать QR-код"), icon: "qr_code_scanner", onClick: () => void scan() }) : null,
     accentButton({ label: tr("Новое хранилище"), icon: "add_moderator", onClick: () => (ui.lockMode = "create") }),
     Button(
       { variant: "outline", icon: "devices", fillWidth: true, onClick: () => (ui.lockMode = "connect") },
       tr("Подключиться к существующему"),
     ),
-  ]
+  ].filter((node): node is UiNode => node !== null)
 }
 
 const connectControls = (): UiNode[] => {
   return [
-    ui.scannerAvailable
+    onPhone() || ui.scannerAvailable
       ? accentButton({ label: tr("Сканировать QR-код"), icon: "qr_code_scanner", onClick: () => void scan() })
       : null,
     field("connect-host", ui.connectHost, tr("Адрес"), (value) => (ui.connectHost = value)),
@@ -148,7 +159,7 @@ const connectControls = (): UiNode[] => {
       : null,
     Button(
       {
-        variant: ui.scannerAvailable ? "outline" : "solid",
+        variant: onPhone() || ui.scannerAvailable ? "outline" : "solid",
         icon: "link",
         fillWidth: true,
         onClick: () => void connect(),
