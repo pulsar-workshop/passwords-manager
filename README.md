@@ -7,6 +7,8 @@ desktop and on Android and syncs through a tiny self-hosted server.
 - A master password unlocks the vault. It cannot be recovered.
 - Entries hold a title, username, password, website and notes. Search, copy, a password
   generator and light/dark themes are built in.
+- On Android the vault can open with a fingerprint: the key is kept behind a Keystore key
+  that only a strong biometric check unlocks.
 - The clipboard clears 30 seconds after a password is copied. The vault locks after five
   idle minutes, and on a phone after a minute in the background.
 
@@ -20,8 +22,7 @@ server; the server sees entry IDs and change times, never the contents or the ke
 ## Requirements
 
 - [Bun](https://bun.sh)
-- Pulsar with `crypto.pbkdf2` (newer than 2.0.0; until it is released, build with
-  `PULSAR_SOURCE` pointing at a Pulsar checkout)
+- Pulsar 2.1.0 or newer (`crypto.pbkdf2` and `biometric`)
 
 ## Run
 
