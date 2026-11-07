@@ -1,6 +1,6 @@
 import { net } from "pulsar"
 import { mergeSealed, parseRemote } from "./model.ts"
-import { reopenEntries } from "./session.ts"
+import { disableBiometric, lock, reopenEntries } from "./session.ts"
 import { DEFAULT_PORT, state, ui } from "./state.ts"
 import { persistState, writeSyncSettings } from "./storage.ts"
 import { setStatus } from "./sync-status.ts"
@@ -70,9 +70,37 @@ export const probeServer = async (): Promise<boolean> => {
   return true
 }
 
+const isEmptyVault = (): boolean => {
+  return state.sealed.length === 0 && Object.keys(state.deleted).length === 0
+}
+
+/**
+ * The server holds another vault. An empty local one has nothing to lose, so this
+ * device switches to the server's vault and asks for its master password; a vault
+ * with entries stays and reports the conflict.
+ */
+const resolveConflict = (remote: RemoteState): void => {
+  if (!remote.vault || !isEmptyVault()) {
+    setStatus("conflict")
+
+    return
+  }
+
+  state.vault = remote.vault
+  state.sync.dirty = false
+  persistState()
+  void disableBiometric()
+  lock()
+
+  ui.lockMode = "join"
+  ui.lockPassword = ""
+  ui.lockError = ""
+  setStatus("ok")
+}
+
 const applyRemote = (remote: RemoteState): void => {
   if (remote.vault && state.vault && remote.vault.salt !== state.vault.salt) {
-    setStatus("conflict")
+    resolveConflict(remote)
 
     return
   }
@@ -102,7 +130,10 @@ const pushOnce = async (base: string): Promise<boolean> => {
     })
 
     if (response.status === 409) {
-      setStatus("conflict")
+      const remote = parseRemote(response.text)
+
+      if (remote) resolveConflict(remote)
+      else setStatus("conflict")
 
       return false
     }

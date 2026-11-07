@@ -11,6 +11,10 @@ import { accentButton, iconTile } from "./kit.ts"
 import { LockPage } from "./lock.ts"
 import { SettingsPage } from "./settings.tsx"
 
+const syncProblem = () => {
+  return ui.syncStatus === "error" || ui.syncStatus === "conflict"
+}
+
 const openSettings = () => {
   ui.settingsOpen = true
 }
@@ -28,9 +32,11 @@ const Header = component(() => {
         { gap: 6, alignItems: "center" },
         Box({ width: 6, height: 6, radius: 3, color: syncColor() }),
         Text({
-          text: compact
-            ? tr("Записей: {count}", { count })
-            : tr("Записей: {count} · {sync}", { count, sync: syncLabel() }),
+          // A phone hides the sync label to save room, but never a problem with sync.
+          text:
+            compact && !syncProblem()
+              ? tr("Записей: {count}", { count })
+              : tr("Записей: {count} · {sync}", { count, sync: syncLabel() }),
           size: 12,
           color: textColor(true),
         }),

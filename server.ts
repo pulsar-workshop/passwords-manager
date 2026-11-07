@@ -117,20 +117,30 @@ const handleState = async (request: Request): Promise<Response> => {
   return Response.json(readState())
 }
 
+const route = (request: Request, path: string): Response | Promise<Response> => {
+  if (path !== "/state") return new Response("not found", { status: 404 })
+
+  if (!authorized(request)) {
+    return new Response("unauthorized", { status: 401, headers: { "www-authenticate": "Bearer" } })
+  }
+
+  return handleState(request)
+}
+
 const server = Bun.serve({
   port,
   hostname: "0.0.0.0",
   maxRequestBodySize: MAX_BODY_BYTES,
-  fetch(request) {
+  async fetch(request, server) {
     const path = new URL(request.url).pathname
+    const response = await route(request, path)
 
-    if (path !== "/state") return new Response("not found", { status: 404 })
-
-    if (!authorized(request)) {
-      return new Response("unauthorized", { status: 401, headers: { "www-authenticate": "Bearer" } })
+    // Failed requests are the ones worth reading when a device stops syncing.
+    if (response.status >= 400) {
+      console.log(`${request.method} ${path} -> ${response.status} from ${server.requestIP(request)?.address ?? "?"}`)
     }
 
-    return handleState(request)
+    return response
   },
 })
 
