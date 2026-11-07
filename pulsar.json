@@ -1,0 +1,17 @@
+{
+  "id": "com.riclud.passwords",
+  "name": "passwords-manager",
+  "version": "0.1.0",
+  "main": "src/main.ts",
+  "targets": ["desktop", "android"],
+  "compat": "portable",
+  "windows": [
+    {
+      "label": "main",
+      "width": 720,
+      "height": 600,
+      "title": "Passwords Manager"
+    }
+  ],
+  "permissions": ["storage", "secure", "net", "clipboard", "dialog", "theme", "system"]
+}

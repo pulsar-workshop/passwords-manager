@@ -1,0 +1,22 @@
+{
+  "name": "passwords-manager",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "QT_QPA_PLATFORMTHEME= pulsar dev",
+    "start": "QT_QPA_PLATFORMTHEME= pulsar run",
+    "build": "pulsar build",
+    "test": "bun test",
+    "server": "bun server.ts",
+    "build:server": "bun build --compile --minify server.ts --outfile dist/passwords-manager-sync",
+    "build:server:linux": "bun build --compile --minify --target=bun-linux-x64-baseline server.ts --outfile dist/passwords-manager-sync-linux-x64",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@noble/ciphers": "^2.4.0"
+  }
+}
